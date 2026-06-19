@@ -1,0 +1,54 @@
+{
+  "best_model": "xgboost",
+  "feature_columns": [
+    "bowler_type_encoded",
+    "pitch_type_encoded",
+    "match_phase_encoded",
+    "over",
+    "ball",
+    "is_wide",
+    "is_noball",
+    "format_encoded",
+    "temperature",
+    "humidity",
+    "cloud_cover",
+    "wind_speed",
+    "precipitation",
+    "balls_faced_so_far",
+    "runs_scored_so_far",
+    "strike_rate_so_far",
+    "wickets_fallen_before",
+    "bowler_career_dismissals_of_kohli",
+    "bowler_career_balls_to_kohli",
+    "kohli_last5_avg",
+    "kohli_last5_sr"
+  ],
+  "split_date": "2021-01-01",
+  "train_size": 32620,
+  "test_size": 10121,
+  "train_positive_rate": 0.016646229307173514,
+  "test_positive_rate": 0.02074893785199091,
+  "models": {
+    "logistic_regression": {
+      "auc_roc": 0.6442961404115677,
+      "auc_pr": 0.03403857626572385,
+      "precision": 0.03176312247644684,
+      "recall": 0.5619047619047619,
+      "f1": 0.06012738853503185
+    },
+    "xgboost": {
+      "auc_roc": 0.6981086431141925,
+      "auc_pr": 0.04329852539561835,
+      "precision": 0.040563620836891544,
+      "recall": 0.4523809523809524,
+      "f1": 0.07445141065830721
+    },
+    "lightgbm": {
+      "auc_roc": 0.6747855917667238,
+      "auc_pr": 0.03715017491729091,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  }
+}

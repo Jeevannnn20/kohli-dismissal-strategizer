@@ -1,0 +1,122 @@
+project:
+  name: Kohli Dismissal Strategizer
+  random_state: 42
+
+player:
+  cricsheet_id: V Kohli
+
+paths:
+  data_dir: data
+  raw_data_dir: data/raw
+  processed_data_dir: data/processed
+  external_data_dir: data/external
+  venue_metadata: data/external/venues.csv
+  bowler_type_lookup: data/external/bowler_types.csv
+  weather_cache_dir: data/external/weather_cache
+  weather_cache_file: data/external/weather_cache.parquet
+  kohli_deliveries: data/processed/kohli_deliveries.parquet
+  kohli_dismissals: data/processed/kohli_dismissals.parquet
+  kohli_deliveries_v2: data/processed/kohli_deliveries_v2.parquet
+  kohli_deliveries_v3: data/processed/kohli_deliveries_v3.parquet
+  kohli_deliveries_enriched: data/processed/kohli_deliveries_enriched.parquet
+  kohli_features: data/processed/kohli_features.parquet
+  label_encoders: data/external/label_encoders.pkl
+  model_results: data/processed/model_results.json
+  shap_results: data/processed/shap_results.pkl
+  plots_dir: data/processed/plots
+  xgboost_model: models/xgboost_kohli.json
+  lightgbm_model: models/lightgbm_kohli.txt
+  logistic_model: models/logistic_kohli.joblib
+  models_dir: models
+  reports_dir: reports
+
+cricsheet:
+  base_download_url: https://cricsheet.org/downloads/
+  formats:
+    tests:
+      zip_file: tests_json.zip
+    odis:
+      zip_file: odis_json.zip
+    t20is:
+      zip_file: t20s_json.zip
+    ipl:
+      zip_file: ipl_json.zip
+
+weather:
+  provider: open-meteo
+  historical_api_url: https://archive-api.open-meteo.com/v1/archive
+  timezone: auto
+  request_sleep_seconds: 0.5
+  target_hour: 14
+  daily_variables:
+    - temperature_2m_max
+    - temperature_2m_min
+    - precipitation_sum
+    - wind_speed_10m_max
+  hourly_variables:
+    - temperature_2m
+    - relative_humidity_2m
+    - precipitation
+    - wind_speed_10m
+    - cloud_cover
+
+features:
+  temporal_train_end_date: "2021-01-01"
+  target_column: is_dismissal
+  date_column: date
+  format_encoding:
+    tests: 0
+    odis: 1
+    t20is: 2
+    ipl: 3
+  categorical_columns:
+    - format
+    - venue
+    - pitch_type
+    - weather_condition
+    - bowler_type
+    - innings
+  numerical_columns:
+    - over
+    - ball_in_over
+    - runs_required
+    - wickets_down
+
+models:
+  baseline:
+    name: logistic_regression
+    params:
+      max_iter: 1000
+      class_weight: balanced
+  xgboost:
+    params:
+      objective: binary:logistic
+      eval_metric: aucpr
+      n_estimators: 300
+      max_depth: 4
+      learning_rate: 0.05
+      subsample: 0.8
+      colsample_bytree: 0.8
+  lightgbm:
+    params:
+      objective: binary
+      metric: average_precision
+      n_estimators: 300
+      learning_rate: 0.05
+      num_leaves: 31
+
+evaluation:
+  metrics:
+    - auc_roc
+    - precision_recall_auc
+  forbidden_metrics:
+    - accuracy
+
+strategy:
+  recommendation_top_n: 5
+  default_delivery_profiles:
+    - outside_off_good_length
+    - short_ball_bodyline
+    - full_inswinger
+    - wide_yorker
+    - leg_spin_outside_off
