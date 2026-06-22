@@ -1,0 +1,46 @@
+{
+  "tests": {
+    "train_size": 12779,
+    "test_size": 3876,
+    "test_positives": 60,
+    "test_positive_rate": 0.015479876160990712,
+    "auc_roc": 0.5990500524109015,
+    "auc_pr": 0.037652496019425497,
+    "vs_combined": -0.005647503980574502,
+    "model_path": "/Users/jeevanmohapatra/Documents/Codex/2026-06-19/i-am-building-a-machine-learning/kohli-strategizer/models/xgboost_tests.json",
+    "skipped": false
+  },
+  "odis": {
+    "train_size": 13094,
+    "test_size": 2864,
+    "test_positives": 49,
+    "test_positive_rate": 0.017108938547486033,
+    "auc_roc": 0.6929387030122884,
+    "auc_pr": 0.037700074571246425,
+    "vs_combined": -0.005599925428753573,
+    "model_path": "/Users/jeevanmohapatra/Documents/Codex/2026-06-19/i-am-building-a-machine-learning/kohli-strategizer/models/xgboost_odis.json",
+    "skipped": false
+  },
+  "t20is": {
+    "train_size": 2138,
+    "test_size": 867,
+    "test_positives": 25,
+    "test_positive_rate": 0.02883506343713956,
+    "auc_roc": 0.6757482185273158,
+    "auc_pr": 0.09811567053665937,
+    "vs_combined": 0.054815670536659374,
+    "model_path": "/Users/jeevanmohapatra/Documents/Codex/2026-06-19/i-am-building-a-machine-learning/kohli-strategizer/models/xgboost_t20is.json",
+    "skipped": false
+  },
+  "ipl": {
+    "train_size": 4609,
+    "test_size": 2514,
+    "test_positives": 76,
+    "test_positive_rate": 0.030230708035003977,
+    "auc_roc": 0.6048799706403005,
+    "auc_pr": 0.04448676609345949,
+    "vs_combined": 0.001186766093459489,
+    "model_path": "/Users/jeevanmohapatra/Documents/Codex/2026-06-19/i-am-building-a-machine-learning/kohli-strategizer/models/xgboost_ipl.json",
+    "skipped": false
+  }
+}

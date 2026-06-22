@@ -1,0 +1,125 @@
+{
+  "baseline": {
+    "auc_roc": 0.6981,
+    "auc_pr": 0.0433
+  },
+  "opponent_model": {
+    "auc_roc": 0.6894888315532045,
+    "auc_pr": 0.04547944536318181,
+    "auc_pr_delta": 0.002179445363181813,
+    "saved_as_default_fallback": true,
+    "train_size": 32620,
+    "test_size": 10121,
+    "test_positives": 210
+  },
+  "shap_top10": [
+    {
+      "feature": "bowler_type_encoded",
+      "mean_abs_shap": 0.3002622425556183
+    },
+    {
+      "feature": "format_encoded",
+      "mean_abs_shap": 0.16238176822662354
+    },
+    {
+      "feature": "bowler_career_balls_to_kohli",
+      "mean_abs_shap": 0.08238846063613892
+    },
+    {
+      "feature": "bowler_career_dismissals_of_kohli",
+      "mean_abs_shap": 0.05765317752957344
+    },
+    {
+      "feature": "match_phase_encoded",
+      "mean_abs_shap": 0.04387541115283966
+    },
+    {
+      "feature": "over",
+      "mean_abs_shap": 0.037421487271785736
+    },
+    {
+      "feature": "humidity",
+      "mean_abs_shap": 0.03183966502547264
+    },
+    {
+      "feature": "ball",
+      "mean_abs_shap": 0.03160892426967621
+    },
+    {
+      "feature": "temperature",
+      "mean_abs_shap": 0.02938450500369072
+    },
+    {
+      "feature": "balls_faced_so_far",
+      "mean_abs_shap": 0.029060253873467445
+    }
+  ],
+  "opposing_team_in_top10": false,
+  "is_home_match_in_top10": false,
+  "watched_feature_shap": {
+    "opposing_team_encoded": 0.00983451772481203,
+    "is_home_match": 0.002054162323474884
+  },
+  "dismissal_rate_by_team": [
+    {
+      "opposing_team": "Australia",
+      "dismissals": 113,
+      "balls_faced": 7542,
+      "dismissal_rate_pct": 1.4982763192787059
+    },
+    {
+      "opposing_team": "England",
+      "dismissals": 98,
+      "balls_faced": 5878,
+      "dismissal_rate_pct": 1.667233752977203
+    },
+    {
+      "opposing_team": "New Zealand",
+      "dismissals": 67,
+      "balls_faced": 3959,
+      "dismissal_rate_pct": 1.6923465521596361
+    },
+    {
+      "opposing_team": "West Indies",
+      "dismissals": 65,
+      "balls_faced": 4602,
+      "dismissal_rate_pct": 1.4124293785310735
+    },
+    {
+      "opposing_team": "Sri Lanka",
+      "dismissals": 65,
+      "balls_faced": 4641,
+      "dismissal_rate_pct": 1.400560224089636
+    },
+    {
+      "opposing_team": "South Africa",
+      "dismissals": 59,
+      "balls_faced": 4742,
+      "dismissal_rate_pct": 1.2442007591733444
+    },
+    {
+      "opposing_team": "Chennai Super Kings",
+      "dismissals": 31,
+      "balls_faced": 911,
+      "dismissal_rate_pct": 3.4028540065861685
+    },
+    {
+      "opposing_team": "Mumbai Indians",
+      "dismissals": 30,
+      "balls_faced": 753,
+      "dismissal_rate_pct": 3.9840637450199203
+    },
+    {
+      "opposing_team": "Bangladesh",
+      "dismissals": 27,
+      "balls_faced": 1860,
+      "dismissal_rate_pct": 1.4516129032258065
+    },
+    {
+      "opposing_team": "Rajasthan Royals",
+      "dismissals": 26,
+      "balls_faced": 739,
+      "dismissal_rate_pct": 3.5182679296346415
+    }
+  ]
+}

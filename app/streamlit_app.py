@@ -15,6 +15,7 @@ from src.strategy.recommender import BOWLER_TYPES, recommend_strategy
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 VENUES_PATH = PROJECT_ROOT / "data/external/venues.csv"
 SHAP_RESULTS_PATH = PROJECT_ROOT / "data/processed/shap_results.pkl"
+LABEL_ENCODERS_PATH = PROJECT_ROOT / "data/external/label_encoders.pkl"
 
 
 FORMAT_OPTIONS = {
@@ -56,6 +57,16 @@ def load_top_shap_features() -> pd.DataFrame:
     return top
 
 
+@st.cache_data
+def load_opposing_teams() -> list[str]:
+    if not LABEL_ENCODERS_PATH.exists():
+        return ["Australia", "England", "South Africa", "New Zealand", "Pakistan"]
+    encoders = joblib.load(LABEL_ENCODERS_PATH)
+    if "opposing_team" not in encoders:
+        return ["Australia", "England", "South Africa", "New Zealand", "Pakistan"]
+    return sorted(str(team) for team in encoders["opposing_team"].classes_)
+
+
 def probability_bar(probability: float) -> None:
     st.progress(min(max(probability / 0.10, 0), 1))
 
@@ -77,6 +88,7 @@ def main() -> None:
 
     venues = load_venues()
     venue_names = sorted(venues["venue"].dropna().unique().tolist())
+    opposing_teams = load_opposing_teams()
 
     left, right = st.columns([0.95, 1.25], gap="large")
 
@@ -85,6 +97,8 @@ def main() -> None:
         selected_format_label = st.selectbox("Format", list(FORMAT_OPTIONS))
         selected_format = FORMAT_OPTIONS[selected_format_label]
         selected_venue = st.selectbox("Venue", venue_names)
+        selected_opposing_team = st.selectbox("Opposing team", opposing_teams)
+        is_home_match = st.checkbox("Playing in India?", value=False)
         phase_labels = list(PHASE_OPTIONS[selected_format])
         selected_phase_label = st.selectbox("Match phase", phase_labels)
         selected_phase = PHASE_OPTIONS[selected_format][selected_phase_label]
@@ -135,12 +149,14 @@ def main() -> None:
                     "wind_speed": wind_speed,
                     "precipitation": precipitation,
                 },
+                opposing_team=selected_opposing_team,
+                is_home_match=is_home_match,
             )
 
             st.write(result["conditions_summary"])
             st.caption(
                 f"Model confidence: {result['model_confidence']} | baseline probability: "
-                f"{result['baseline_probability']:.2%}"
+                f"{result['baseline_probability']:.2%} | model used: {result.get('model_used', 'combined')}"
             )
 
             for recommendation in result["recommendations"]:

@@ -116,6 +116,70 @@ The model is most useful for ranking strategy options, not for treating a probab
 
 See [docs/MODEL_OBSERVATIONS.md](docs/MODEL_OBSERVATIONS.md) for the validation narrative, SHAP observations, calibration notes, and model-interpretation caveats.
 
+## Tier 1 Improvements
+
+### Survival Analysis (Cox Proportional Hazards)
+
+**Model performance:**
+- C-index: 0.7848 on post-2021 test data (78% of innings correctly
+  ranked by predicted longevity — strongest model in the project)
+- Training innings: 753 dismissed, 140 not-out (censored)
+
+**Hazard ratios (features that increase dismissal rate per ball):**
+
+| Feature | Hazard Ratio | Interpretation |
+|---|---|---|
+| Opening phase | 13.25 | Dismissal hazard is front-loaded — survive early or get out fast |
+| Wickets fallen | 6.97 | Each additional wicket fallen increases dismissal rate 7x |
+| Powerplay | 6.70 | Aggressive intent in powerplay creates elevated risk |
+| Middle overs | 1.88 | Moderate elevation vs tail baseline |
+| Seam pitch | 1.16 | 16% higher dismissal rate on seaming surfaces |
+| LAPS bowler | 1.16 | Left-arm pace seam independently validates empirical lift layer |
+| Tail phase | 0.32 (negative coef) | Once set in 60th+ over of a Test, extremely hard to dismiss |
+
+**Median balls faced before dismissal:**
+
+| Format | Median balls |
+|---|---|
+| Tests | 55.5 |
+| ODIs | 46.5 |
+| T20Is | 23.5 |
+| IPL | 23.0 |
+
+| Pitch type | Median balls |
+|---|---|
+| Bounce (Australia) | 40.0 |
+| Seam (England/NZ/SA) | 34.0 |
+| Spin (subcontinent) | 30.0 |
+| Flat (subcontinent) | 29.5 |
+| Neutral | 25.0 |
+
+Kohli lasts longest on bounce pitches (40 balls) — Australian
+conditions suit him despite Australia having the most dismissals
+in absolute terms (113). He is most vulnerable on flat and spin
+subcontinental pitches in short formats.
+
+**Opponent dismissal rates:**
+
+| Opponent | Dismissals | Balls faced | Rate |
+|---|---|---|---|
+| Mumbai Indians | 30 | 753 | 3.98% |
+| Rajasthan Royals | 26 | 739 | 3.52% |
+| Chennai Super Kings | 31 | 911 | 3.40% |
+| New Zealand | 67 | 3,959 | 1.69% |
+| England | 98 | 5,878 | 1.67% |
+| Australia | 113 | 7,542 | 1.50% |
+| Bangladesh | 27 | 1,860 | 1.45% |
+| West Indies | 65 | 4,602 | 1.41% |
+| Sri Lanka | 65 | 4,641 | 1.40% |
+| South Africa | 59 | 4,742 | 1.24% |
+
+IPL franchise rates (3-4%) reflect format dismissal rate, not
+opponent-specific vulnerability. Among international opponents,
+New Zealand and England dismiss Kohli most efficiently per ball.
+South Africa has the lowest rate despite producing his most
+frequent individual dismisser (Rabada, 13 dismissals).
+
 ## Limitations
 
 - No ball-tracking data is available from the free public source, so line, length, swing, seam, and release-point detail are absent.

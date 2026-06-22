@@ -97,11 +97,16 @@ def load_artifacts(config_path_text: str | None = None) -> dict[str, Any]:
     config = load_config(config_path)
     project_root = project_root_from_config(config_path)
 
-    model = XGBClassifier()
-    model.load_model(project_root / Path(config["paths"]["xgboost_model"]))
+    default_model_path = project_root / Path(config["paths"].get("xgboost_opponent_model", "models/xgboost_opponent.json"))
+    default_features_path = project_root / Path(config["paths"].get("kohli_features_v2", config["paths"]["kohli_features"]))
+    if not default_model_path.exists() or not default_features_path.exists():
+        default_model_path = project_root / Path(config["paths"]["xgboost_model"])
+        default_features_path = project_root / Path(config["paths"]["kohli_features"])
+
+    model = load_xgboost_model(str(default_model_path))
     encoders = joblib.load(project_root / Path(config["paths"]["label_encoders"]))
     venues = pd.read_csv(project_root / Path(config["paths"]["venue_metadata"]))
-    features = pd.read_parquet(project_root / Path(config["paths"]["kohli_features"]))
+    features = pd.read_parquet(default_features_path)
     booster_features = model.get_booster().feature_names
     feature_columns = booster_features or [
         column for column in features.columns if column not in {"match_id", "date", "is_dismissal"}
@@ -131,15 +136,37 @@ def load_artifacts(config_path_text: str | None = None) -> dict[str, Any]:
     )
     return {
         "config": config,
+        "project_root": project_root,
         "model": model,
+        "default_model_path": default_model_path,
         "encoders": encoders,
         "venues": venues,
+        "features": features,
         "feature_columns": feature_columns,
         "medians": medians,
         "baseline_probability": baseline_probability,
         "calibration_table": calibration_table,
         "bowler_type_lifts": bowler_type_lifts,
     }
+
+
+@lru_cache(maxsize=16)
+def load_xgboost_model(model_path_text: str) -> XGBClassifier:
+    model = XGBClassifier()
+    model.load_model(Path(model_path_text))
+    return model
+
+
+def select_model_for_format(format_name: str, artifacts: dict[str, Any]) -> tuple[Any, str, list[str]]:
+    if "config" not in artifacts or "project_root" not in artifacts:
+        return artifacts["model"], "combined", artifacts["feature_columns"]
+    config = artifacts["config"]
+    project_root = artifacts["project_root"]
+    format_model = project_root / Path(config["paths"].get("models_dir", "models")) / f"xgboost_{format_name}.json"
+    if format_model.exists():
+        model = load_xgboost_model(str(format_model))
+        return model, "per_format", model.get_booster().feature_names or artifacts["feature_columns"]
+    return artifacts["model"], "combined", artifacts["model"].get_booster().feature_names or artifacts["feature_columns"]
 
 
 def build_calibration_table(
@@ -187,6 +214,15 @@ def safe_label_encode(value: str, encoder: Any, fallback_encoded: float) -> int:
     if value in set(encoder.classes_):
         return int(encoder.transform([value])[0])
     return int(fallback_encoded)
+
+
+def most_frequent_encoded(features: pd.DataFrame, column: str, fallback: float) -> int:
+    if column not in features.columns:
+        return int(fallback)
+    mode = features[column].mode(dropna=True)
+    if mode.empty:
+        return int(fallback)
+    return int(mode.iloc[0])
 
 
 def venue_pitch_type(venue: str, venues: pd.DataFrame) -> str:
@@ -251,10 +287,13 @@ def build_feature_row(
     wickets_fallen: int,
     weather: dict,
     artifacts: dict[str, Any],
+    feature_columns: list[str] | None = None,
+    opposing_team: str = "Australia",
+    is_home_match: bool = False,
 ) -> pd.DataFrame:
     medians = artifacts["medians"]
     encoders = artifacts["encoders"]
-    feature_columns = artifacts["feature_columns"]
+    selected_feature_columns = feature_columns or artifacts["feature_columns"]
     strike_rate = (runs_scored_so_far / balls_faced_so_far * 100) if balls_faced_so_far else 0
 
     row = dict(medians)
@@ -289,7 +328,23 @@ def build_feature_row(
             "kohli_last5_sr": medians["kohli_last5_sr"],
         }
     )
-    return pd.DataFrame([row])[feature_columns]
+    if "opposing_team_encoded" in selected_feature_columns:
+        fallback = most_frequent_encoded(
+            artifacts["features"],
+            "opposing_team_encoded",
+            medians.get("opposing_team_encoded", 0),
+        )
+        if "opposing_team" in encoders:
+            row["opposing_team_encoded"] = safe_label_encode(
+                opposing_team,
+                encoders["opposing_team"],
+                fallback,
+            )
+        else:
+            row["opposing_team_encoded"] = fallback
+    if "is_home_match" in selected_feature_columns:
+        row["is_home_match"] = int(bool(is_home_match))
+    return pd.DataFrame([row])[selected_feature_columns]
 
 
 def positive_probability(model: Any, feature_row: pd.DataFrame) -> float:
@@ -343,10 +398,12 @@ def recommend_strategy(
     runs_scored_so_far: int,
     wickets_fallen: int,
     weather: dict,
+    opposing_team: str = "Australia",
+    is_home_match: bool = False,
     config_path: Path | None = None,
 ) -> dict:
     artifacts = load_artifacts(str(config_path) if config_path else None)
-    model = artifacts["model"]
+    model, model_used, model_feature_columns = select_model_for_format(format, artifacts)
     venues = artifacts["venues"]
     pitch_type = venue_pitch_type(venue, venues)
     baseline_probability = artifacts["baseline_probability"] or BASELINE_PROBABILITY
@@ -364,6 +421,9 @@ def recommend_strategy(
             wickets_fallen=wickets_fallen,
             weather=weather,
             artifacts=artifacts,
+            feature_columns=model_feature_columns,
+            opposing_team=opposing_team,
+            is_home_match=is_home_match,
         )
         raw_probability = positive_probability(model, feature_row)
         bowler_type_encoded = int(feature_row["bowler_type_encoded"].iloc[0])
@@ -407,6 +467,7 @@ def recommend_strategy(
         "conditions_summary": conditions_summary,
         "model_confidence": MODEL_CONFIDENCE,
         "baseline_probability": baseline_probability,
+        "model_used": model_used,
     }
 
 

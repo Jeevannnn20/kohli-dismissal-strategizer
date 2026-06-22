@@ -27,6 +27,13 @@ paths:
   xgboost_model: models/xgboost_kohli.json
   lightgbm_model: models/lightgbm_kohli.txt
   logistic_model: models/logistic_kohli.joblib
+  format_model_results: data/processed/format_model_results.json
+  cox_model: models/cox_ph_model.pkl
+  kohli_innings: data/processed/kohli_innings.parquet
+  kohli_deliveries_opponent: data/processed/kohli_deliveries_opponent.parquet
+  kohli_features_v2: data/processed/kohli_features_v2.parquet
+  opponent_model_results: data/processed/opponent_model_results.json
+  xgboost_opponent_model: models/xgboost_opponent.json
   models_dir: models
   reports_dir: reports
 
